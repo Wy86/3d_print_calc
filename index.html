@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bambu Lab Print-Cost Calculator</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="container py-16">
+    <h1 class="mb-8">Bambu Lab Print-Cost Calculator</h1>
+    <p class="text-secondary">Estimate the real cost of your next 3 D print – materials, electricity, and equipment – in one place.</p>
+  </header>
+
+  <main class="container flex flex-col gap-16 py-16" id="app">
+    <!-- Printer selection -->
+    <section class="card">
+      <div class="card__header flex justify-between items-center">
+        <h2>1. Printer</h2>
+      </div>
+      <div class="card__body flex flex-col gap-16">
+        <div class="form-group">
+          <label class="form-label" for="printerSelect">Model</label>
+          <select id="printerSelect" class="form-control"></select>
+        </div>
+        <div id="printerSpecs" class="status status--info">Select a printer to view specs.</div>
+      </div>
+    </section>
+
+    <!-- Accessories -->
+    <section class="card">
+      <div class="card__header flex justify-between items-center">
+        <h2>2. Accessories</h2>
+      </div>
+      <div class="card__body flex flex-col gap-8" id="accessoryGroup">
+        <!-- JS will inject checkboxes -->
+      </div>
+    </section>
+
+    <!-- Filament -->
+    <section class="card">
+      <div class="card__header"><h2>3. Filament</h2></div>
+      <div class="card__body flex flex-col gap-16">
+        <fieldset class="form-group">
+          <legend class="form-label">Type</legend>
+          <div id="filamentTypes" class="flex gap-16 items-center"></div>
+        </fieldset>
+      </div>
+    </section>
+
+    <!-- Print parameters -->
+    <section class="card">
+      <div class="card__header"><h2>4. Print parameters</h2></div>
+      <div class="card__body grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;">
+        <div class="form-group">
+          <label class="form-label" for="hoursInput">Print time – hours</label>
+          <input type="number" id="hoursInput" class="form-control" min="0" value="0" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="minutesInput">Print time – minutes</label>
+          <input type="number" id="minutesInput" class="form-control" min="0" max="59" value="0" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="weightInput">Filament used (g)</label>
+          <input type="number" id="weightInput" class="form-control" min="0" value="0" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="filamentPriceInput">Filament price per kg (ZAR)</label>
+          <input type="number" id="filamentPriceInput" class="form-control" min="0" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="rateInput">Electricity rate per kWh (ZAR)</label>
+          <input type="number" id="rateInput" class="form-control" min="0" step="0.01" />
+        </div>
+      </div>
+    </section>
+
+    <!-- Advanced -->
+    <details class="card" id="advancedCard">
+      <summary class="card__header"><h2>5. Advanced settings</h2></summary>
+      <div class="card__body flex flex-col gap-16">
+        <div class="form-group">
+          <label class="form-label" for="depreciationInput">Printer depreciation cost per hour (ZAR)</label>
+          <input type="number" id="depreciationInput" class="form-control" min="0" step="0.01" />
+          <small class="text-secondary">Default is calculated from printer price ÷ 3 000&nbsp;hrs.</small>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="maintenanceInput">Maintenance cost per hour (ZAR)</label>
+          <input type="number" id="maintenanceInput" class="form-control" min="0" step="0.01" value="0.20" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="failureInput">Failure rate (%) – extra material wastage</label>
+          <input type="number" id="failureInput" class="form-control" min="0" max="100" value="5" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="laborInput">Labor cost per hour (ZAR)</label>
+          <input type="number" id="laborInput" class="form-control" min="0" step="0.01" value="0" />
+        </div>
+      </div>
+    </details>
+
+    <!-- Cost breakdown toggles -->
+    <section class="card">
+      <div class="card__header flex justify-between items-center">
+        <h2>6. Cost breakdown</h2>
+        <div class="flex gap-8 items-center">
+          <label class="flex gap-4 items-center text-secondary"><input type="checkbox" id="toggleMaterial" checked /> Material</label>
+          <label class="flex gap-4 items-center text-secondary"><input type="checkbox" id="toggleElectricity" checked /> Electricity</label>
+          <label class="flex gap-4 items-center text-secondary"><input type="checkbox" id="toggleEquipment" checked /> Equipment</label>
+          <label class="flex gap-4 items-center text-secondary"><input type="checkbox" id="toggleLabor" checked /> Labor</label>
+        </div>
+      </div>
+      <div class="card__body">
+        <table class="cost-table" style="width:100%;border-collapse:collapse;">
+          <tbody id="costBody"></tbody>
+          <tfoot>
+            <tr style="border-top:1px solid var(--color-border);">
+              <th class="text-left py-8">Total</th>
+              <td id="totalCost" class="text-right font-bold py-8">–</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </section>
+
+    <!-- Actions -->
+    <section class="flex gap-8 justify-between py-16">
+      <div class="flex gap-8">
+        <button class="btn btn--primary" id="copyBtn">Copy summary</button>
+        <button class="btn btn--secondary" id="resetBtn">Reset</button>
+      </div>
+      <div id="copyStatus" class="status hidden"></div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
